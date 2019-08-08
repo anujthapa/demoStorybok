@@ -6,9 +6,10 @@ export default class App extends React.Component {
   state = {
     collection: [
       {
-        fname: 'anuj',
-        lname: 'thapa',
+        name: 'anuj thapa',
+        email: 'thapa@a.a',
         details: 'my name is anuj thapa',
+        subject:"about me"
       },
     ],
   }
@@ -17,6 +18,8 @@ export default class App extends React.Component {
     const collection = this.state.collection.slice()
     collection.push(obj)
     this.setState({ collection: collection })
+    console.log(this.state);
+    
   }
 
   render() {
@@ -47,8 +50,9 @@ export default class App extends React.Component {
 
         {this.state.collection.map(item => (
           <div style={{...content}}>
-            <li>{item.fname}</li>
-            <li>{item.lname}</li>
+            <li>{item.name}</li>
+            <li>{item.email}</li>
+            <li>{item.subject}</li>
             <li>{item.details}</li>
           </div>
         ))}
