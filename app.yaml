@@ -1,0 +1,22 @@
+service: docs
+runtime: python27
+env: standard
+api_version: '1'
+threadsafe: true
+
+skip_files:
+- ^(?!dist)
+
+handlers:
+  - url: "/(.*\\.(gif|png|jpeg|jpg|css|css.map|js|js.map|ico|json|ttf|woff))$"
+    secure: always
+    application_readable: false
+    static_files: "dist/\\1"
+    require_matching_file: false
+    upload: 'dist/(.*)'
+  - url: '/(.*)'
+    secure: always
+    application_readable: false
+    static_files: dist/index.html
+    require_matching_file: false
+    upload: dist/index.html

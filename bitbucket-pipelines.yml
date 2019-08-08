@@ -1,0 +1,73 @@
+image: node:12.3.1
+
+pipelines:
+  branches:
+    develop:     
+      - step:            
+          script:    
+          - npm i -g yarn
+          - yarn
+          - yarn build:dev
+          ###########
+          # STEP 2: INSTALL GCLOUD
+          ###########
+          # Installing gcloud
+          - curl -o /tmp/google-cloud-sdk.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-209.0.0-linux-x86_64.tar.gz
+          - tar -xvf /tmp/google-cloud-sdk.tar.gz -C /tmp/
+          - /tmp/google-cloud-sdk/install.sh -q
+          - source /tmp/google-cloud-sdk/path.bash.inc
+          # auth gcloud and config project
+          - echo $DEV_GCR_KEY > ./gcloud-api-key.json
+          - gcloud auth activate-service-account --key-file ./gcloud-api-key.json
+          - gcloud config set project $DEV_GC_PROJECT
+          - gcloud config set compute/zone $DEV_GC_ZONE
+          ###########
+          # STEP 3: DEPLOY TO APPENGINE
+          ###########
+          - yes | gcloud app deploy app.yaml --version=$BITBUCKET_COMMIT
+    release-*:
+      - step:            
+          script:          
+          - npm install
+          - npm run build:stage:fi
+          ###########
+          # STEP 2: INSTALL GCLOUD, KUBECTL
+          ###########
+          # Installing gcloud
+          - curl -o /tmp/google-cloud-sdk.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-209.0.0-linux-x86_64.tar.gz
+          - tar -xvf /tmp/google-cloud-sdk.tar.gz -C /tmp/
+          - /tmp/google-cloud-sdk/install.sh -q
+          - source /tmp/google-cloud-sdk/path.bash.inc
+          # auth gcloud and config project
+          - echo $STAGE_GCR_KEY > ./gcloud-api-key.json
+          - gcloud auth activate-service-account --key-file gcloud-api-key.json
+          - gcloud config set project $STAGE_GC_PROJECT
+          - gcloud config set compute/zone $STAGE_GC_ZONE
+          ###########
+          # STEP 3: DEPLOY TO KUBECTL
+          ###########
+          - yes | gcloud app deploy app-fi.yaml --version=$(echo "$BITBUCKET_BRANCH" | tr . -)
+  custom:
+    release-live-docs:
+      - step:          
+          script:
+          - npm install
+          - npm run build:prod:de
+          ###########
+          # STEP 2: INSTALL GCLOUD, KUBECTL
+          ###########
+          # Installing gcloud
+          - curl -o /tmp/google-cloud-sdk.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-209.0.0-linux-x86_64.tar.gz
+          - tar -xvf /tmp/google-cloud-sdk.tar.gz -C /tmp/
+          - /tmp/google-cloud-sdk/install.sh -q
+          - source /tmp/google-cloud-sdk/path.bash.inc
+          # auth gcloud and config project
+          - echo $LIVE_GCR_KEY > ./gcloud-api-key.json
+          - gcloud auth activate-service-account --key-file gcloud-api-key.json
+          - gcloud config set project $LIVE_GC_PROJECT
+          - gcloud config set compute/zone $LIVE_GC_ZONE
+          - echo $BITBUCKET_BRANCH
+          ###########
+          # STEP 3: DEPLOY TO KUBECTL
+          ###########
+          - yes | gcloud app deploy app-de.yaml --version=$BITBUCKET_COMMIT
